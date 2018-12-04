@@ -41,6 +41,7 @@ setup(
         # -*- Extra requirements: -*-
         'plone.api',
         'setuptools',
+        'requests',
     ],
     extras_require={
         'test': [

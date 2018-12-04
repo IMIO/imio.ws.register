@@ -4,5 +4,9 @@
     xmlns:plone="http://namespaces.plone.org/plone"
     i18n_domain="imio.ws.register">
 
+  <subscriber
+    for="zope.processlifetime.IProcessStarting"
+    handler=".event.zope_started"
+    />
 
 </configure>
