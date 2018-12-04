@@ -1,4 +1,7 @@
 graft src/imio
 graft docs
 include *.rst
+include LICENSE.GPL
+include requirements.txt
 global-exclude *.pyc
+global-exclude *.pyo
