@@ -34,10 +34,8 @@ def register(url, parameters):
             json=parameters,
         )
     except Exception as e:
-        import pdb
-        pdb.set_trace()
         return u'An error occured during route registration: {0}'.format(
-            e.msg,
+            e.message,
         )
     if result.status_code != 200:
         return u'An error occured during route registration: {0}'.format(
