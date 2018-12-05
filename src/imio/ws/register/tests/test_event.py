@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from imio.ws.register import event
-from imio.ws.register.event import logger
 from mock import Mock
 from requests.exceptions import ConnectionError
 
