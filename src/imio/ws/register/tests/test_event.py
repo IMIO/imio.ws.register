@@ -4,10 +4,10 @@ from imio.ws.register import event
 from mock import Mock
 from requests.exceptions import ConnectionError
 
-import unittest
+import mock
 import os
 import requests
-import mock
+import unittest
 
 
 class TestEvent(unittest.TestCase):
