@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import copy
 import logging
 import os
 import requests
@@ -24,21 +25,30 @@ def zope_started(event):
 
 
 def register(url, parameters):
+    router_url = '{0}/router'.format(url)
+    headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
+    get_parameters = copy.deepcopy(parameters)
+    error_msg = u'An error occured during route registration: {0}'
+    del get_parameters['application_url']
+
     try:
-        result = requests.post(
-            '{0}/router'.format(url),
-            headers={
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            json=parameters,
-        )
+        result = requests.get(router_url, headers=headers, json=get_parameters)
     except Exception as e:
-        return u'An error occured during route registration: {0}'.format(
-            e.message,
-        )
+        return error_msg.format(e.message)
     if result.status_code != 200:
-        return u'An error occured during route registration: {0}'.format(
-            result.json().get('errors'),
-        )
+        return error_msg.format(result.json().get('errors'))
+    result_body = result.json()
+    if result_body == parameters:
+        return u"Route already exist and up to date"
+    if "client_id" not in result_body:
+        me = requests.post  # new route
+    else:
+        me = requests.patch  # existing route with new values
+
+    try:
+        result = me(router_url, headers=headers, json=parameters)
+    except Exception as e:
+        return error_msg.format(e.message)
+    if result.status_code != 200:
+        return error_msg.format(result.json().get('errors'))
     return result.json()['msg']

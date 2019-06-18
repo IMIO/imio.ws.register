@@ -5,6 +5,9 @@ Changelog
 1.0a2 (unreleased)
 ------------------
 
+- Improve route registration by handling url updates
+  [mpeeters]
+
 - Add package tests
   [mpeeters]
 
