@@ -6,37 +6,37 @@ import os
 import requests
 
 
-logger = logging.getLogger('imio.ws.register')
+logger = logging.getLogger("imio.ws.register")
 
 
 def zope_started(event):
     keys = {
-        'CLIENT_ID': 'client_id',
-        'APPLICATION_ID': 'application_id',
-        'APPLICATION_URL': 'url',
+        "CLIENT_ID": "client_id",
+        "APPLICATION_ID": "application_id",
+        "APPLICATION_URL": "url",
     }
     values = {v: os.getenv(k) for k, v in keys.items() if os.getenv(k)}
-    ws_url = os.getenv('WS_URL')
+    ws_url = os.getenv("WS_URL")
     if ws_url and len(values.keys()) == 3:
         result = register(ws_url, values)
         logger.info(result)
     else:
-        logger.info('missing parameters for route registration')
+        logger.info("missing parameters for route registration")
 
 
 def register(url, parameters):
-    router_url = '{0}/router'.format(url)
-    headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
+    router_url = "{0}/router".format(url)
+    headers = {"Accept": "application/json", "Content-Type": "application/json"}
     get_parameters = copy.deepcopy(parameters)
-    error_msg = u'An error occured during route registration: {0}'
-    del get_parameters['application_url']
+    error_msg = u"An error occured during route registration: {0}"
+    del get_parameters["application_url"]
 
     try:
         result = requests.get(router_url, headers=headers, json=get_parameters)
     except Exception as e:
         return error_msg.format(e.message)
     if result.status_code != 200:
-        return error_msg.format(result.json().get('errors'))
+        return error_msg.format(result.json().get("errors"))
     result_body = result.json()
     if result_body == parameters:
         return u"Route already exist and up to date"
@@ -50,5 +50,5 @@ def register(url, parameters):
     except Exception as e:
         return error_msg.format(e.message)
     if result.status_code != 200:
-        return error_msg.format(result.json().get('errors'))
-    return result.json()['msg']
+        return error_msg.format(result.json().get("errors"))
+    return result.json()["msg"]
