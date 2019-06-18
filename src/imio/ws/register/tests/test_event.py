@@ -4,10 +4,21 @@ from imio.ws.register import event
 from mock import Mock
 from requests.exceptions import ConnectionError
 
+import copy
 import mock
 import os
 import requests
 import unittest
+
+
+class FakeRequestResponse(object):
+
+    def __init__(self, status_code, json):
+        self.status_code = status_code
+        self._json = json
+
+    def json(self):
+        return self._json
 
 
 class TestEvent(unittest.TestCase):
@@ -55,34 +66,129 @@ class TestEvent(unittest.TestCase):
             event.zope_started(None)
             mock_logger.info.assert_called_with(excepted_message)
 
-    def test_register_request_exception(self):
+    @mock.patch(
+        'requests.get',
+        Mock(side_effect=(
+            ConnectionError('error 1'),
+            FakeRequestResponse(400, {'errors': 'error 2'}),
+        )),
+    )
+    def test_register_get_exception(self):
         """Test when an error is raised by requests"""
-        requests.post = Mock(side_effect=ConnectionError('error 1'))
-        msg = event.register('http://localhost', {})
-        self.assertEqual(
-            u'An error occured during route registration: error 1',
-            msg,
-        )
+        parameters = {
+            'client_id': 'FOO',
+            'application_id': 'BAR',
+            'application_url': 'http://app.com',
+        }
+        msg = event.register('http://localhost', parameters)
+        self.assertEqual(u'An error occured during route registration: error 1', msg)
+        msg = event.register('http://localhost', parameters)
+        self.assertEqual(u'An error occured during route registration: error 2', msg)
 
-    def test_register_wrong_status(self):
-        """Test when the response status code is not 200"""
-        response = type('response', (object, ), {
-            'status_code': 400,
-            'json': lambda x: {'errors': 'error 2'},
-        })
-        requests.post = Mock(return_value=response())
-        msg = event.register('http://localhost', {})
-        self.assertEqual(
-            u'An error occured during route registration: error 2',
-            msg,
-        )
+    def test_register_route_already_exist(self):
+        """Test when the route already exist"""
+        parameters = {
+            'client_id': 'FOO',
+            'application_id': 'BAR',
+            'application_url': 'http://app.com',
+        }
+        response = FakeRequestResponse(200, parameters)
+        with mock.patch('requests.get', Mock(return_value=response)):
+            msg = event.register('http://localhost', parameters)
+            self.assertEqual(u'Route already exist and up to date', msg)
 
-    def test_register_200(self):
-        """Test when the response status code is 200"""
-        response = type('response', (object, ), {
-            'status_code': 200,
-            'json': lambda x: {'msg': 'success'},
-        })
-        requests.post = Mock(return_value=response())
-        msg = event.register('http://localhost', {})
-        self.assertEqual(u'success', msg)
+    @mock.patch(
+        'requests.get', Mock(return_value=FakeRequestResponse(200, {})),
+    )
+    @mock.patch(
+        'requests.post',
+        Mock(side_effect=(
+            ConnectionError('error 1'),
+            FakeRequestResponse(400, {'errors': 'error 2'}),
+        )),
+    )
+    @mock.patch('requests.patch')
+    def test_register_post_route_exception(self, patch):
+        """Test when the post of the new route fails"""
+        parameters = {
+            'client_id': 'FOO',
+            'application_id': 'BAR',
+            'application_url': 'http://app.com',
+        }
+        msg = event.register('http://localhost', parameters)
+        self.assertFalse(patch.called)
+        self.assertEqual(u'An error occured during route registration: error 1', msg)
+        msg = event.register('http://localhost', parameters)
+        self.assertFalse(patch.called)
+        self.assertEqual(u'An error occured during route registration: error 2', msg)
+
+    @mock.patch(
+        'requests.get', Mock(return_value=FakeRequestResponse(200, {
+            'client_id': 'FOO',
+            'application_id': 'BAR',
+            'application_url': 'http://newapp.com',
+        })),
+    )
+    @mock.patch(
+        'requests.patch',
+        Mock(side_effect=(
+            ConnectionError('error 1'),
+            FakeRequestResponse(400, {'errors': 'error 2'}),
+        )),
+    )
+    @mock.patch('requests.post')
+    def test_register_patch_route_exception(self, post):
+        """Test when the patch of the route fails"""
+        parameters = {
+            'client_id': 'FOO',
+            'application_id': 'BAR',
+            'application_url': 'http://app.com',
+        }
+        msg = event.register('http://localhost', parameters)
+        self.assertFalse(post.called)
+        self.assertEqual(u'An error occured during route registration: error 1', msg)
+        msg = event.register('http://localhost', parameters)
+        self.assertFalse(post.called)
+        self.assertEqual(u'An error occured during route registration: error 2', msg)
+
+    @mock.patch(
+        'requests.get', Mock(return_value=FakeRequestResponse(
+            200, {"msg": "The route does not exist"},
+        )),
+    )
+    @mock.patch(
+        'requests.post',
+        Mock(return_value=FakeRequestResponse(200, {"msg": "Route added"})),
+    )
+    def test_register_post(self):
+        """Test when a new route is added"""
+        parameters = {
+            'client_id': 'FOO',
+            'application_id': 'BAR',
+            'application_url': 'http://app.com',
+        }
+        msg = event.register('http://localhost', parameters)
+        self.assertEqual(u"Route added", msg)
+
+    @mock.patch(
+        'requests.get', Mock(return_value=FakeRequestResponse(
+            200, {"msg": "The route does not exist"},
+        )),
+    )
+    @mock.patch(
+        'requests.patch',
+        Mock(return_value=FakeRequestResponse(200, {"msg": "Route updated"})),
+    )
+    def test_register_patch(self):
+        """Test when a route is updated"""
+        parameters = {
+            'client_id': 'FOO',
+            'application_id': 'BAR',
+            'application_url': 'http://app.com',
+        }
+        new_parameters = copy.deepcopy(parameters)
+        new_parameters['application_url'] = 'http://newapp.com'
+        response = FakeRequestResponse(200, parameters)
+        with mock.patch('requests.get', Mock(return_value=response)):
+            msg = event.register('http://localhost', new_parameters)
+            self.assertEqual(u"Route updated", msg)
