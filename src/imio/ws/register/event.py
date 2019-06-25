@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import copy
 import logging
 import os
 import requests
@@ -27,12 +26,14 @@ def zope_started(event):
 def register(url, parameters):
     router_url = "{0}/router".format(url)
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
-    get_parameters = copy.deepcopy(parameters)
     error_msg = u"An error occured during route registration: {0}"
-    del get_parameters["application_url"]
 
     try:
-        result = requests.get(router_url, headers=headers, json=get_parameters)
+        url = "{ws_url}/route/{client_id}/{application_id}".format(
+            ws_url=url,
+            **parameters
+        )
+        result = requests.get(url, headers=headers)
     except Exception as e:
         return error_msg.format(e.message)
     if result.status_code != 200:

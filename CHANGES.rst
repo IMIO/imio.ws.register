@@ -5,7 +5,8 @@ Changelog
 1.0a3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix an issue with route update
+  [mpeeters]
 
 
 1.0a2 (2019-06-25)

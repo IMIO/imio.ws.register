@@ -75,7 +75,7 @@ class TestEvent(unittest.TestCase):
         parameters = {
             "client_id": "FOO",
             "application_id": "BAR",
-            "application_url": "http://app.com",
+            "url": "http://app.com",
         }
         msg = event.register("http://localhost", parameters)
         self.assertEqual(u"An error occured during route registration: error 1", msg)
@@ -87,7 +87,7 @@ class TestEvent(unittest.TestCase):
         parameters = {
             "client_id": "FOO",
             "application_id": "BAR",
-            "application_url": "http://app.com",
+            "url": "http://app.com",
         }
         response = FakeRequestResponse(200, parameters)
         with mock.patch("requests.get", Mock(return_value=response)):
@@ -110,7 +110,7 @@ class TestEvent(unittest.TestCase):
         parameters = {
             "client_id": "FOO",
             "application_id": "BAR",
-            "application_url": "http://app.com",
+            "url": "http://app.com",
         }
         msg = event.register("http://localhost", parameters)
         self.assertFalse(patch.called)
@@ -127,7 +127,7 @@ class TestEvent(unittest.TestCase):
                 {
                     "client_id": "FOO",
                     "application_id": "BAR",
-                    "application_url": "http://newapp.com",
+                    "url": "http://newapp.com",
                 },
             )
         ),
@@ -147,7 +147,7 @@ class TestEvent(unittest.TestCase):
         parameters = {
             "client_id": "FOO",
             "application_id": "BAR",
-            "application_url": "http://app.com",
+            "url": "http://app.com",
         }
         msg = event.register("http://localhost", parameters)
         self.assertFalse(post.called)
@@ -171,7 +171,7 @@ class TestEvent(unittest.TestCase):
         parameters = {
             "client_id": "FOO",
             "application_id": "BAR",
-            "application_url": "http://app.com",
+            "url": "http://app.com",
         }
         msg = event.register("http://localhost", parameters)
         self.assertEqual(u"Route added", msg)
@@ -191,10 +191,10 @@ class TestEvent(unittest.TestCase):
         parameters = {
             "client_id": "FOO",
             "application_id": "BAR",
-            "application_url": "http://app.com",
+            "url": "http://app.com",
         }
         new_parameters = copy.deepcopy(parameters)
-        new_parameters["application_url"] = "http://newapp.com"
+        new_parameters["url"] = "http://newapp.com"
         response = FakeRequestResponse(200, parameters)
         with mock.patch("requests.get", Mock(return_value=response)):
             msg = event.register("http://localhost", new_parameters)
