@@ -16,7 +16,7 @@ long_description = "\n\n".join(
 
 setup(
     name="imio.ws.register",
-    version="1.0a2",
+    version="1.0a3.dev0",
     description="Route subscription for webservice routing",
     long_description=long_description,
     # Get more from https://pypi.python.org/pypi?%3Aaction=list_classifiers
