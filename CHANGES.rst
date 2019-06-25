@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a2 (unreleased)
+1.0a2 (2019-06-25)
 ------------------
 
 - Improve route registration by handling url updates
