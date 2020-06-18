@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a3 (unreleased)
+1.0a3 (2020-06-18)
 ------------------
 
 - Fix an issue with route update
