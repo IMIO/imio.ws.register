@@ -5,7 +5,8 @@ Changelog
 1.0a4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Avoid an error when middleware response can not be handled
+  [mpeeters]
 
 
 1.0a3 (2020-06-18)

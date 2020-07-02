@@ -35,9 +35,14 @@ def register(url, parameters):
         )
         result = requests.get(url, headers=headers)
     except Exception as e:
-        return error_msg.format(e.message)
+        if hasattr(e, "message"):
+            return error_msg.format(e.message)
+        return error_msg.format("wrong json format")
     if result.status_code != 200:
-        return error_msg.format(result.json().get("errors"))
+        try:
+            return error_msg.format(result.json().get("errors"))
+        except Exception:  # This happend when the json cannot be decoded
+            return error_msg.format("wrong json format")
     result_body = result.json()
     if result_body == parameters:
         return u"Route already exist and up to date"
