@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a4 (unreleased)
+1.0a4 (2020-07-22)
 ------------------
 
 - Avoid an error when middleware response can not be handled
